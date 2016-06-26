@@ -1,0 +1,27 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -L ccl-bin -- $0 "$@"
+|#
+(progn ;;init forms
+  (ql:quickload '(:clack :hunchentoot :dexador))
+  )
+
+(defpackage :ros.script.proxy.3675921026
+  (:use :cl))
+(in-package :ros.script.proxy.3675921026)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (print (lisp-implementation-type))
+  (clack:clackup
+   (lambda (env)
+     (print env)
+     (multiple-value-bind (content code header)
+         (dex:request (getf env :request-uri)
+                      :method (getf env :request-method)
+                      :force-binary t)
+       `(,code (:content-type ,(gethash "content-type" header))
+               ,content))))
+  (loop while t do (sleep 1)))
+;;; vim: set ft=lisp lisp:

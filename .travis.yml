@@ -21,9 +21,10 @@ cache:
 before_script:
   - ros version
   - ros config
-
-script:
   - ros build proxy.ros
   - echo 'proxy = "http://localhost:5000"' > ~/.curlrc
-  - ./proxy &
+  - ./proxy
+  - sleep 3
+
+script:
   - curl http://www.google.com

@@ -24,3 +24,6 @@ before_script:
 
 script:
   - ros build proxy.ros
+  - echo 'proxy = "http://localhost:5000"' > ~/.curlrc
+  - ./proxy &
+  - curl http://www.google.com

@@ -13,6 +13,7 @@ os:
 
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+  - ros asdf install
 
 cache:
   directories:

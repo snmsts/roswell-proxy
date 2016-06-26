@@ -12,8 +12,8 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
 (use-package :sn.github.release)
 (defvar *project-path* (truename (merge-pathnames "../" (make-pathname :name nil :type nil :defaults *load-pathname*))))
 (defvar *new-version* nil)
-(defvar *owner* "roswell")
-(defvar *repo* "roswell")
+(defvar *owner* "snmsts")
+(defvar *repo* "roswell-proxy")
 
 (defun find-version ()
   (with-open-file (in (merge-pathnames "configure.ac" *project-path*))

@@ -1,0 +1,29 @@
+language: c
+sudo: false
+env:
+  global:
+    - PATH=~/.roswell/bin:$PATH
+    - ROSWELL_BRANCH=release
+    - ROSWELL_INSTALL_DIR=$HOME/.roswell
+    - LISP=ccl-bin
+
+os:
+  - osx
+  - linux
+
+install:
+  - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
+
+script:
+  - ros build proxy.ros
+
+cache:
+  directories:
+    - $HOME/.roswell
+
+before_script:
+  - ros version
+  - ros config
+
+script:
+  - echo "No test"

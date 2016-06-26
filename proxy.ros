@@ -5,6 +5,7 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
 |#
 (progn ;;init forms
   (ql:quickload '(:clack :hunchentoot :dexador :daemon))
+  (funcall (read-from-string "clack.util:find-handler") :hunchentoot)
   )
 
 (defpackage :ros.script.proxy.3675921026

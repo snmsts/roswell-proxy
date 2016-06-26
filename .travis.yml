@@ -23,7 +23,7 @@ before_script:
   - ros config
   - ros build proxy.ros
   - echo 'proxy = "http://localhost:5000"' > ~/.curlrc
-  - ./proxy
+  - ./proxy daemon
   - sleep 3
 
 script:

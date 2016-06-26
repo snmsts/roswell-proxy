@@ -14,9 +14,6 @@ os:
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
 
-script:
-  - ros build proxy.ros
-
 cache:
   directories:
     - $HOME/.roswell
@@ -26,4 +23,4 @@ before_script:
   - ros config
 
 script:
-  - echo "No test"
+  - ros build proxy.ros

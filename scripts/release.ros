@@ -10,134 +10,8 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
    (load "../sn.github/sn.github.asd")))
 (ql:quickload '(:cl-ppcre :split-sequence :sn.github))
 (use-package :sn.github.release)
-(defvar *project-path* (truename (merge-pathnames "../" (make-pathname :name nil :type nil :defaults *load-pathname*))))
-(defvar *new-version* nil)
 (defvar *owner* "snmsts")
 (defvar *repo* "roswell-proxy")
-
-(defun find-version ()
-  (with-open-file (in (merge-pathnames "configure.ac" *project-path*))
-    (loop for line = (read-line in nil nil)
-       while line
-       for match = (nth-value 1 (cl-ppcre:scan-to-strings "^AC_INIT\\([^,]*,\\[([^,]*)\\]" line))
-       when match
-       do (return-from find-version (aref match 0)))))
-
-(defun inc-version (v)
-  (let ((pos (position-if (complement #'digit-char-p) v :from-end t)))
-    (if pos
-        (format nil "~A~A"
-                (subseq v 0 (1+ pos))
-                (1+ (parse-integer (subseq v (1+ pos)))))
-        v)))
-
-(defun edit-file (path match replace version &key test)
-  (let ((file (with-open-file (in path :direction :input)
-                (loop for line = (read-line in nil nil)
-                   while line
-                   for match- = (nth-value 1 (cl-ppcre:scan-to-strings match line))
-                   collect (if match-
-                               (cl-ppcre:regex-replace replace line
-                                                       (format nil "\\{1}~A\\{3}" version))
-                               line)))))
-    (if test
-        file
-        (with-open-file (out path :direction :output :if-exists :supersede)
-          (dolist (line file)
-            (format out "~A~%" line))))))
-
-(defun edit-configure-ac (&optional (version *new-version*) test)
-  (edit-file (merge-pathnames "configure.ac" *project-path*)
-             "^AC_INIT\\([^,]*,\\[([^,]*)\\]"
-             "^(AC_INIT\\([^,]*,\\[)([^,]*)(\\].*)$"
-             version :test test))
-
-(defun edit-roswell-asd (&optional (version *new-version*) test)
-  (edit-file (merge-pathnames "roswell.asd" *project-path*)
-             "^[ ]*:version[ ]*\"[^,]*\"[ ]*$"
-             "^([ ]*:version[ ]*\")([^\"]*)(\".*)$"
-             version :test test))
-
-(defun x (cmd)
-  (string-right-trim
-   (format nil "~A" #\newline)
-   (with-output-to-string (o)
-     (uiop/run-program:run-program cmd :output o))))
-
-(defun edit-change-log ()
-  (with-open-file (out (merge-pathnames "ChangeLog--" *project-path*)
-                       :direction :output :if-exists :supersede)
-    (format out "~{~A~%~}"
-            (list (format nil "roswell (~A-1) unstable; urgency=low" *new-version*)
-                  "" "  *" ""
-                  (format nil " -- ~A <~A>  ~A"
-                          (x "git config --get user.name")
-                          (x "git config --get user.email")
-                          (x "LANG=C date -R")) "")))
-  (with-open-file (out (merge-pathnames "ChangeLog---" *project-path*)
-                       :direction :output :if-exists :supersede)
-    (uiop/run-program:run-program
-     (format nil "cat ~A ~A"
-             (merge-pathnames "ChangeLog--" *project-path*)
-             (merge-pathnames "ChangeLog" *project-path*))
-     :output out))
-  (uiop/run-program:run-program
-   (format nil "mv ~A ~A"
-           (merge-pathnames "ChangeLog---" *project-path*)
-           (merge-pathnames "ChangeLog" *project-path*)))
-  (uiop/run-program:run-program
-   (format nil "rm -f ~A ~A"
-           (merge-pathnames "ChangeLog--" *project-path*)
-           (merge-pathnames "ChangeLog---" *project-path*))))
-
-(defun show-how-to-release ()
-  (format t "~{~A~%~}~%"
-          `("To release"
-            "1. Review changes and complete ChangeLog"
-            "2. Type"
-            "make release"
-            "3. don't forget to release homeberew-roswell as well followings are snmsts's"
-            "ros scripts/homebrew.ros"
-            "cp scripts/homebrew/roswell.rb ../homebrew-roswell/roswell.rb"
-            "cd ../homebrew-roswell/"
-            "git add roswell.rb"
-            ,(format nil "git commit -m \"v~A\"" *new-version*)
-            "git push")))
-
-(defun prepare (argv)
-  (declare (ignore argv))
-  (uiop/run-program:run-program "git checkout master" :output t)
-  (format t "~&current version is ~s.How about new one's:~%" (find-version))
-  (force-output)
-  (setq *new-version* (read-line))
-  (when (zerop (length *new-version*))
-    (setf *new-version* (inc-version (find-version))))
-  (format t "~&new version name is ~S~%" *new-version*)
-  (force-output)
-  (edit-change-log)
-  (edit-configure-ac)
-  (edit-roswell-asd)
-  (show-how-to-release))
-
-(defun release (argv)
-  (declare (ignore argv))
-  (let ((version (find-version)))
-    (mapc
-     #'uiop:run-program
-     `("git add ChangeLog configure.ac roswell.asd"
-       ,(format nil "git commit -m \"bump version to ~A\"" version)))))
-
-(defun release-2 (argv)
-  (declare (ignore argv))
-  (let ((version (find-version)))
-    (mapc
-     (lambda (x) (uiop:run-program x :output :interactive :error-output :interactive))
-     `("git checkout release"
-       "git merge master"
-       ,(format nil "git tag -a \"v~A\" -m \"v~A\"" version version)
-       "git push --tags"
-       "git push --all"
-       "git checkout master"))))
 
 (defun release-exist-p (tagname &key (owner *owner*) (repo *repo*))
   (ignore-errors
@@ -163,20 +37,9 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
   (ensure-release-exists (uiop:getenv "TRAVIS_TAG"))
   (asset-upload (pathname (first argv)) (uiop:getenv "TRAVIS_TAG")))
 
-(defun debian (argv)
-  (declare (ignore argv))
-  (unless (uiop:getenv "GITHUB_OAUTH_TOKEN")
-    (error "GITHUB_OAUTH_TOKEN must be set"))
-  (ensure-release-exists (uiop:getenv "TRAVIS_TAG"))
-  (loop for i in (directory (make-pathname
-                             :type :wild :name :wild
-                             :defaults (merge-pathnames "scripts/debian/" *project-path*)))
-     when (pathname-name i)
-     do (asset-upload (pathname i) (uiop:getenv "TRAVIS_TAG"))))
-
 (defun main (subcmd &rest argv)
   (declare (ignorable argv))
-  (let ((subcmd (find subcmd '(release prepare github debian release-2)
+  (let ((subcmd (find subcmd '(github)
                       :test 'equal :key 'string-downcase)))
     (when subcmd
       (funcall subcmd argv))))

@@ -15,7 +15,7 @@ install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - ros asdf install
   - git clone https://github.com/snmsts/sn.github.git ~/lisp/sn.github
-  - ros ./scripts/release.ros
+  - ros ./scripts/release.ros dummy
 
 cache:
   directories:

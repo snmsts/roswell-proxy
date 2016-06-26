@@ -1,10 +1,10 @@
 #!/bin/sh
 #|-*- mode:lisp -*-|#
 #| <Put a one-line description here>
-exec ros -Q -L ccl-bin -- $0 "$@"
+exec ros -Q -L sbcl-bin -- $0 "$@"
 |#
 (progn ;;init forms
-  (ql:quickload '(:clack :hunchentoot :dexador))
+  (ql:quickload '(:clack :hunchentoot :dexador :daemon))
   )
 
 (defpackage :ros.script.proxy.3675921026
@@ -12,16 +12,26 @@ exec ros -Q -L ccl-bin -- $0 "$@"
 (in-package :ros.script.proxy.3675921026)
 
 (defun main (&rest argv)
-  (declare (ignorable argv))
+  (print argv)
   (print (lisp-implementation-type))
-  (clack:clackup
-   (lambda (env)
-     (print env)
-     (multiple-value-bind (content code header)
-         (dex:request (getf env :request-uri)
-                      :method (getf env :request-method)
-                      :force-binary t)
-       `(,code (:content-type ,(gethash "content-type" header))
-               ,content))))
-  (loop while t do (sleep 1)))
+  (force-output *standard-output*)
+  (flet ((serve (daemon)
+           (clack:clackup
+            (lambda (env)
+              (unless daemon
+                (print env))
+              (multiple-value-bind (content code header)
+                  (dex:request (getf env :request-uri)
+                               :method (getf env :request-method)
+                               :force-binary t)
+                `(,code (:content-type ,(gethash "content-type" header))
+                        ,content)))
+            :silent t)
+           (loop while t do (sleep 1))))
+    (if (find "daemon" argv :test 'equal)
+        (progn
+          (daemon:daemonize :exit-parent t)
+          (serve t))
+        (serve nil))))
+
 ;;; vim: set ft=lisp lisp:

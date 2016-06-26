@@ -5,7 +5,7 @@ env:
     - PATH=~/.roswell/bin:$PATH
     - ROSWELL_BRANCH=release
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
-    - LISP=ccl-bin
+    - LISP=sbcl-bin
 
 os:
   - osx

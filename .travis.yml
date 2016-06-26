@@ -14,6 +14,7 @@ os:
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - ros asdf install
+  - if [ x$TRAVIS_TAG != x ]; then git clone https://github.com/snmsts/sn.github.git ~/lisp/sn.github; fi
 
 cache:
   directories:
@@ -29,3 +30,7 @@ before_script:
 
 script:
   - curl http://www.google.com
+
+after_success:
+  - if [ x$TRAVIS_TAG != x ]; then tar czvf $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz proxy;fi
+  - if [ x$TRAVIS_TAG != x ]; then ros ./scripts/release.ros github $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz;fi

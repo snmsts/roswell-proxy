@@ -22,12 +22,10 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
 
 (defun main (&rest argv)
   (flet ((serve (output)
-           (print (lisp-implementation-type) output)
-           (force-output output)
            (clack:clackup
             (lambda (env)
               (let (*print-pretty*)
-                (format output "~{~2,'0d~^/~} ~A"
+                (format output "~{~2,'0d~^/~} ~A~%"
                         (cdddr (reverse (multiple-value-list (decode-universal-time (get-universal-time)))))
                         env))
               (force-output output)

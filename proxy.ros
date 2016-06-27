@@ -26,7 +26,10 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
            (force-output output)
            (clack:clackup
             (lambda (env)
-              (print env output)
+              (let (*print-pretty*)
+                (format output "~{~2,'0d~^/~} ~A"
+                        (cdddr (reverse (multiple-value-list (decode-universal-time (get-universal-time)))))
+                        env))
               (force-output output)
               (if (and (eql (getf env :request-method) :get)
                        (probe-file (ensure-directories-exist

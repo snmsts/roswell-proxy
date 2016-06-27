@@ -33,6 +33,7 @@ before_script:
 script:
   - curl http://www.google.com
   - rm ~/.curlrc
+  - cat /tmp/proxy-log
 
 after_success:
   - if [ x$TRAVIS_TAG != x ]; then tar czvf $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz proxy;fi

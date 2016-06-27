@@ -13,19 +13,21 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.proxy.3675921026)
 
+(defvar *logpath* #P"/tmp/proxy-log")
+
 (defun puri (uri)
   (merge-pathnames (format nil ".rosproxy/~A"
                            (quri:url-encode uri))
                    (user-homedir-pathname)))
 
 (defun main (&rest argv)
-  (print (lisp-implementation-type))
-  (force-output *standard-output*)
-  (flet ((serve (daemon)
+  (flet ((serve (output)
+           (print (lisp-implementation-type) output)
+           (force-output output)
            (clack:clackup
             (lambda (env)
-              (unless daemon
-                (print env))
+              (print env output)
+              (force-output output)
               (if (and (eql (getf env :request-method) :get)
                        (probe-file (ensure-directories-exist
                                     (puri (getf env :request-uri)))))
@@ -42,9 +44,12 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
             :silent t)
            (loop while t do (sleep 1))))
     (if (find "daemon" argv :test 'equal)
-        (progn
+        (with-open-file (out *logpath*
+                             :direction :output
+                             :if-does-not-exist :create
+                             :if-exists :append)
           (daemon:daemonize :exit-parent t)
-          (serve t))
-        (serve nil))))
+          (serve out))
+        (serve *standard-output*))))
 
 ;;; vim: set ft=lisp lisp:

@@ -10,23 +10,21 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
    (load "../sn.github/sn.github.asd")))
 (ql:quickload '(:cl-ppcre :split-sequence :sn.github))
 (use-package :sn.github.release)
-(defvar *owner* "snmsts")
-(defvar *repo* "roswell-proxy")
 
-(defun release-exist-p (tagname &key (owner *owner*) (repo *repo*))
+(defun release-exist-p (tagname &key owner repo)
   (ignore-errors
     (find tagname
           (sn.github.release::releases-list owner repo)
           :key (lambda (x) (getf x :|tag_name|))
           :test 'equal)))
 
-(defun ensure-release-exists (tagname &key (owner *owner*) (repo *repo*))
+(defun ensure-release-exists (tagname &key owner repo)
   (let ((found (release-exist-p tagname :owner owner :repo repo)))
     (if found
         found
         (sn.github.release::release-create owner repo tagname))))
 
-(defun asset-upload (path tagname &key (owner *owner*) (repo *repo*))
+(defun asset-upload (path tagname &key owner repo)
   (sn.github.release::release-asset-upload
    owner repo
    (getf (release-exist-p tagname :owner owner :repo repo) :|id|) path))
@@ -34,8 +32,10 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
 (defun github (argv)
   (unless (uiop:getenv "GITHUB_OAUTH_TOKEN")
     (error "GITHUB_OAUTH_TOKEN must be set"))
-  (ensure-release-exists (uiop:getenv "TRAVIS_TAG"))
-  (asset-upload (pathname (first argv)) (uiop:getenv "TRAVIS_TAG")))
+  (ensure-release-exists (second argv))
+  (asset-upload (pathname (first argv)) (second argv))
+  :owner (third argv)
+  :repo (fourth argv))
 
 (defun main (subcmd &rest argv)
   (declare (ignorable argv))

@@ -37,4 +37,4 @@ script:
 
 after_success:
   - if [ x$TRAVIS_TAG != x ]; then tar czvf $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz proxy;fi
-  - if [ x$TRAVIS_TAG != x ]; then ros ./scripts/release.ros github $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz;fi
+  - if [ x$TRAVIS_TAG != x ]; then ros ./scripts/release.ros github $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz $TRAVIS_TAG snmsts roswell-proxy;fi

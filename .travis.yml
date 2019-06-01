@@ -8,6 +8,7 @@ env:
     - LISP=sbcl-bin
 
 os:
+  - windows
   - osx
   - linux
 

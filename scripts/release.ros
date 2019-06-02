@@ -9,12 +9,12 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
  (ignore-errors
    (load "../sn.github/sn.github.asd")))
 (ql:quickload '(:cl-ppcre :split-sequence :sn.github))
-(use-package :sn.github.release)
+(use-package :sn.github.repos.releases)
 
 (defun release-exist-p (tagname &key owner repo)
   (ignore-errors
     (find tagname
-          (sn.github.release::releases-list owner repo)
+          (sn.github.repos.releases::releases-list owner repo)
           :key (lambda (x) (getf x :|tag_name|))
           :test 'equal)))
 
@@ -22,10 +22,10 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
   (let ((found (release-exist-p tagname :owner owner :repo repo)))
     (if found
         found
-        (sn.github.release::release-create owner repo tagname))))
+        (sn.github.repos.releases::release-create owner repo tagname))))
 
 (defun asset-upload (path tagname &key owner repo)
-  (sn.github.release::release-asset-upload
+  (sn.github.repos.releases::release-asset-upload
    owner repo
    (getf (release-exist-p tagname :owner owner :repo repo) :|id|) path))
 

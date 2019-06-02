@@ -4,6 +4,7 @@
 exec ros -Q -L sbcl-bin -- $0 "$@"
 |#
 (progn ;;init forms
+  (push :hunchentoot-no-ssl *features*)
   (ql:quickload '(:clack :dexador :daemon))
   (funcall (read-from-string "clack.util:find-handler") :hunchentoot)
   (funcall (read-from-string "lack.util:find-middleware") :backtrace)

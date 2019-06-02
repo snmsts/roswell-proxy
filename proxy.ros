@@ -14,7 +14,7 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.proxy.3675921026)
 
-(defvar *logpath* #P"/tmp/proxy-log")
+(defvar *logpath* (ensure-directories-exist #P"/tmp/proxy-log"))
 
 (defun puri (uri)
   (merge-pathnames (format nil ".rosproxy/~A"

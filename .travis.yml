@@ -13,6 +13,7 @@ os:
   - linux
 
 install:
+  - if [ $TRAVIS_OS_NAME = windows ]; then choco install -y openssl.light; fi
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - ros asdf install
   - ros install snmsts/sn.github

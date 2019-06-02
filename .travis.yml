@@ -29,13 +29,13 @@ before_script:
   - ros config
   - ros build proxy.ros
   - echo 'proxy = "http://localhost:5000"' > ~/.curlrc
-  - ./proxy daemon
+  - ./proxy daemon &
   - sleep 3
 
 script:
   - curl http://www.google.com
   - rm ~/.curlrc
-  - cat /tmp/proxy-log
+  - cat /tmp/proxy-log ||true
 
 after_success:
   - if [ x$TRAVIS_TAG != x ]; then tar czvf $TRAVIS_TAG-$TRAVIS_OS_NAME.tgz proxy;fi

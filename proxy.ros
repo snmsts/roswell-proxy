@@ -50,7 +50,7 @@ exec ros -Q -L sbcl-bin -- $0 "$@"
                              :direction :output
                              :if-does-not-exist :create
                              :if-exists :append)
-          (daemon:daemonize :exit-parent t)
+          #-windows(daemon:daemonize :exit-parent t)
           (serve out))
         (serve *standard-output*))))
 
